@@ -2,13 +2,16 @@ package tests;
 
 import base.BaseTest;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import pages.AdminMoviesPage;
 import utils.ExcelUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class AdminManageMoviesTests extends BaseTest {
 
@@ -24,6 +27,12 @@ public class AdminManageMoviesTests extends BaseTest {
         return rows.stream().map(row -> new Object[]{row}).toArray(Object[][]::new);
     }
 
+    @BeforeMethod
+    public void loginasAdmin(){
+        loginAsAdmin();
+    }
+
+
     @Test(groups = {"smoke", "admin"}, dataProvider = "AdminValidDetails")
     public void enterValidMovieDetails(Map<String, String> data) throws InterruptedException {
 
@@ -37,7 +46,7 @@ public class AdminManageMoviesTests extends BaseTest {
         String price      = data.get("price");
 
         // The rest of your execution logic remains untouched
-        loginAsAdmin();
+
         AdminMoviesPage page = new AdminMoviesPage(driver).open();
         int expectedCount = page.getMovieCount() + 1;
 
@@ -61,7 +70,7 @@ public class AdminManageMoviesTests extends BaseTest {
         String trailerUrl = data.get("trailerUrl");
         String price      = data.get("price");
 
-        loginAsAdmin();
+
         AdminMoviesPage page = new AdminMoviesPage(driver).open();
 
         page.fillDetails(title, genre, duration, language, posterUrl, trailerUrl, price);
@@ -83,5 +92,17 @@ public class AdminManageMoviesTests extends BaseTest {
         // 3. Asset the validation message matches perfectly
         Assert.assertEquals(actualerrormsg, expectederrormsg, "The form validation error message mismatch!");
     }
+
+    @Test(groups = {"smoke","known-defect"})
+    public void TestingDuplicatesMovies(){
+        AdminMoviesPage page = new AdminMoviesPage(driver).open();
+        List<String> allTitles = page.getAllMovieTitles();
+// Resulting List: ["Interstellar", "mahan", "baym", "baymax", "baymax", "baymax"]
+        Set<String> uniqueTitles = new HashSet<>(allTitles);
+        System.out.println(allTitles);
+       Assert.assertEquals(uniqueTitles.size(),allTitles.size());
+    }
+
+
 
 }
