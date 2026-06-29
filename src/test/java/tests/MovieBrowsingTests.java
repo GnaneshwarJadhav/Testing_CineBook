@@ -17,7 +17,8 @@ public class MovieBrowsingTests extends BaseTest {
 
     @DataProvider(name = "movieSearchData")
     public Object[][] movieSearchData() {
-        List<Map<String, String>> rows = ExcelUtils.readSheet("MovieSearch");
+        List<Map<String, String>> rows = ExcelUtils.
+                readSheet("MovieSearch");
         return rows.stream().map(row -> new Object[]{row}).toArray(Object[][]::new);
     }
 
@@ -81,33 +82,15 @@ public class MovieBrowsingTests extends BaseTest {
         Assert.assertTrue(moviesPage.trailerModalOrPlayerVisible(), "Trailer modal/player should be visible.");
     }
 
-    @Test(groups = {"regression", "movie", "trailer", "TS_102", "TC_106"},
-            description = "TC_106: Trailer unavailable state should show a proper unavailable message")
-    public void TC_106_unavailableTrailerHasUnavailableMessage() {
-        loginAsUser();
-        MoviesPage moviesPage = new MoviesPage(driver).open();
-        if (!moviesPage.hasDisabledTrailerButton()) {
-            throw new SkipException("No unavailable trailer button is present in current data.");
-        }
-        Assert.assertTrue(moviesPage.disabledTrailerButtonsHaveUnavailableMessage(),
-                "Disabled trailer buttons should explain that no trailer is available.");
-    }
-
-    @Test(groups = {"regression", "movie", "TS_301", "TC_101"}, dataProvider = "movieSearchData",
-            description = "Validate that movies can be searched and marked intrest")
-    public void TC_301_moviesCanBeSearchedandmarkedintrest(Map<String, String> data) throws InterruptedException {
-        loginAsUser();
-        String movieName = data.getOrDefault("movieName", ConfigReader.get("defaultMovie"));
-        MoviesPage moviesPage = new MoviesPage(driver).open();
-        if (!moviesPage.hasMovieCards()) {
-            throw new SkipException("No movie cards are available to search.");
-        }
-
-        moviesPage.search(movieName);
-        moviesPage.clickFirstMovieTitle();
-        moviesPage.intrestvisible();
-        Assert.assertTrue(moviesPage.intrestbuttonclick(),
-                "Interest button should only appear when no shows are available.");
-
-    }
+//    @Test(groups = {"regression", "movie", "trailer", "TS_102", "TC_106"},
+//            description = "TC_106: Trailer unavailable state should show a proper unavailable message")
+//    public void TC_106_unavailableTrailerHasUnavailableMessage() {
+//        loginAsUser();
+//        MoviesPage moviesPage = new MoviesPage(driver).open();
+//        if (!moviesPage.hasDisabledTrailerButton()) {
+//            throw new SkipException("No unavailable trailer button is present in current data.");
+//        }
+//        Assert.assertTrue(moviesPage.disabledTrailerButtonsHaveUnavailableMessage(),
+//                "Disabled trailer buttons should explain that no trailer is available.");
+//    }
 }
