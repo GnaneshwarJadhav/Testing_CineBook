@@ -17,8 +17,8 @@ public class BookingTests extends BaseTest {
     }
 
     @Test(dataProvider = "movies", groups = { "regression", "booking", "FRD_2_5" },
-            description = "FRD_2.5.7: Proceeding without a selected seat should show validation feedback")
-    public void FRD_251_bookingRequiresAtLeastOneSeat(String movieId, String showId) throws InterruptedException {
+            description = "Proceeding without a selected seat should show validation feedback")
+    public void bookingRequiresAtLeastOneSeat(String movieId, String showId) throws InterruptedException {
         loginAsUser();
         Thread.sleep(3000);
 
@@ -38,7 +38,7 @@ public class BookingTests extends BaseTest {
 
     @Test(dataProvider = "movies", groups = { "booking", "regression", "FRD_2_5" },
             description = "Verify already booked seats are disabled/unselectable.")
-    public void FRD_252_alreadyBookedSeatsAreDisabledAndUnselectable(String movieId, String showId)
+    public void alreadyBookedSeatsAreDisabledAndUnselectable(String movieId, String showId)
             throws InterruptedException {
         loginAsUser();
         Thread.sleep(3000);
@@ -65,8 +65,8 @@ public class BookingTests extends BaseTest {
     }
 
     @Test(dataProvider = "movies", groups = { "payment", "destructive", "booking", "TS_103", "TC_107" },
-            description = "TC_107: Verify booking is successful for selected movie through payment redirect boundary")
-    public void TC_107_bookingCanProceedToPaymentForSelectedMovie(String movieId, String showId)
+            description = "Verify booking is successful for selected movie through payment redirect boundary")
+    public void bookingCanProceedToPaymentForSelectedMovie(String movieId, String showId)
             throws InterruptedException {
         loginAsUser();
         Thread.sleep(3000);
@@ -89,5 +89,21 @@ public class BookingTests extends BaseTest {
         Thread.sleep(3000);
         Assert.assertTrue(bookingPage.navigatedToPaymentOrSuccess(),
                 "Proceeding should redirect to payment or payment result page.");
+    }
+
+
+    @Test(dataProvider = "movies", groups = { "regression", "booking", "FRD_2_5" },
+            description = "Verify the total price matches the selected movie and show seat")
+    public void checkPrice(String movieId, String showId) throws InterruptedException {
+        loginAsUser();
+        Thread.sleep(3000);
+        BookingPage bookingPage = new BookingPage(driver);
+        bookingPage.selectMovie(movieId);
+        Thread.sleep(3000);
+        bookingPage.selectShow(showId);
+        Thread.sleep(3000);
+        bookingPage.selectFirstAvailableSeat();
+        String totalPrice = bookingPage.getTotalPrice();
+        Assert.assertEquals(totalPrice,"₹224.20");
     }
 }
