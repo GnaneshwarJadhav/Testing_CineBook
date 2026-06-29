@@ -63,6 +63,11 @@ public class BookingTests extends BaseTest {
         final String movieId = "movie-book-3";
         final String showId  = "show-12";
 
+        // Latch: both threads count down once they have selected a seat.
+        // Neither proceeds to payment until BOTH have selected — then they fire together.
+        final java.util.concurrent.CountDownLatch seatSelectedLatch =
+                new java.util.concurrent.CountDownLatch(2);
+
         // ── Driver 1 – rahulkumar ─────────────────────────────────────────────────
         DriverFactory.createDriver(null, false);
         WebDriver driver1 = DriverFactory.getDriver();
@@ -89,10 +94,22 @@ public class BookingTests extends BaseTest {
                 Thread.sleep(3000);
                 bp1.selectFirstAvailableSeat();
                 Thread.sleep(3000);
+
+                // Seat selected — signal ready and wait for sanjaykumar to be ready too
+                System.out.println("[rahulkumar] Seat selected. Waiting for sanjaykumar...");
+                seatSelectedLatch.countDown();
+                seatSelectedLatch.await(); // blocks until both are ready
+
+                // Both are ready — wait 5 seconds together, then fire payment
+                System.out.println("[rahulkumar] Both ready. Waiting 5 seconds before payment...");
+                Thread.sleep(5000);
+
+                System.out.println("[rahulkumar] Proceeding to pay NOW!");
                 bp1.proceedToPay();
                 Thread.sleep(3000);
 
                 user1ReachedPayment.set(bp1.navigatedToPaymentOrSuccess());
+                System.out.println("[rahulkumar] payment reached: " + user1ReachedPayment.get());
             } catch (Exception e) {
                 System.out.println("[rahulkumar] Exception: " + e.getMessage());
                 user1ReachedPayment.set(false);
@@ -114,10 +131,22 @@ public class BookingTests extends BaseTest {
                 Thread.sleep(3000);
                 bp2.selectFirstAvailableSeat();
                 Thread.sleep(3000);
+
+                // Seat selected — signal ready and wait for rahulkumar to be ready too
+                System.out.println("[sanjaykumar] Seat selected. Waiting for rahulkumar...");
+                seatSelectedLatch.countDown();
+                seatSelectedLatch.await(); // blocks until both are ready
+
+                // Both are ready — wait 5 seconds together, then fire payment
+                System.out.println("[sanjaykumar] Both ready. Waiting 5 seconds before payment...");
+                Thread.sleep(5000);
+
+                System.out.println("[sanjaykumar] Proceeding to pay NOW!");
                 bp2.proceedToPay();
                 Thread.sleep(3000);
 
                 user2ReachedPayment.set(bp2.navigatedToPaymentOrSuccess());
+                System.out.println("[sanjaykumar] payment reached: " + user2ReachedPayment.get());
             } catch (Exception e) {
                 System.out.println("[sanjaykumar] Exception: " + e.getMessage());
                 user2ReachedPayment.set(false);
@@ -128,12 +157,9 @@ public class BookingTests extends BaseTest {
         t1.start();
         t2.start();
 
-        // ── Wait for both to finish (max 3 minutes) ───────────────────────────────
-        t1.join(180_000);
-        t2.join(180_000);
-
-        System.out.println("[rahulkumar]  payment reached: " + user1ReachedPayment.get());
-        System.out.println("[sanjaykumar] payment reached: " + user2ReachedPayment.get());
+        // ── Wait for both to finish (max 5 minutes) ───────────────────────────────
+        t1.join(300_000);
+        t2.join(300_000);
 
         // ── Tear down both drivers ────────────────────────────────────────────────
         try { driver1.quit(); } catch (Exception ignored) {}
@@ -142,7 +168,7 @@ public class BookingTests extends BaseTest {
         // ── Assertion: if BOTH reached payment, the system has no seat-lock guard ─
         boolean bothSucceeded = user1ReachedPayment.get() && user2ReachedPayment.get();
         Assert.assertFalse(bothSucceeded,
-                "FAIL: Both rahulkumar and sanjaykumar reached payment for the SAME seat. " +
+                "FAIL: Both rahulkumar and sanjaykumar reached payment for the SAME seat simultaneously. " +
                 "The system must prevent double-booking — only one user should succeed.");
     }
 
