@@ -21,7 +21,7 @@ public class MovieBrowsingTests extends BaseTest {
         return rows.stream().map(row -> new Object[]{row}).toArray(Object[][]::new);
     }
 
-    @Test(groups = {"sanity", "regression", "movie", "TS_101", "TC_101"}, dataProvider = "movieSearchData",
+    @Test(groups = {"regression", "movie", "TS_101", "TC_101"}, dataProvider = "movieSearchData",
             description = "TC_101: Validate that movies can be searched")
     public void TC_101_moviesCanBeSearched(Map<String, String> data) {
         loginAsUser();
@@ -61,7 +61,7 @@ public class MovieBrowsingTests extends BaseTest {
         Assert.assertTrue(moviesPage.hasResultsOrEmptyState(), "Theater filter should refresh the movie list.");
     }
 
-    @Test(groups = {"known-defect", "DF_101", "movie", "TS_102", "TC_104"},
+    @Test(groups = {"known-defect", "movie", "TS_102", "TC_104"},
             description = "TC_104 / DF_101: Validate movie card layout fields including poster, title, genre, languages, reviews, book, and trailer")
     public void TC_104_movieCardLayoutShowsAllRequiredFields() {
         loginAsUser();
@@ -70,7 +70,7 @@ public class MovieBrowsingTests extends BaseTest {
         Assert.assertTrue(moviesPage.allVisiblePostersLoad(), "Each visible movie poster should load successfully.");
     }
 
-    @Test(groups = {"known-defect", "DF_102", "movie", "trailer", "TS_102", "TC_105"},
+    @Test(groups = {"known-defect", "movie", "trailer", "TS_102", "TC_105"},
             description = "TC_105 / DF_102: Trailer modal should open and show playable trailer content when a trailer is available")
     public void TC_105_availableTrailerModalOpens() {
         loginAsUser();
@@ -91,5 +91,23 @@ public class MovieBrowsingTests extends BaseTest {
         }
         Assert.assertTrue(moviesPage.disabledTrailerButtonsHaveUnavailableMessage(),
                 "Disabled trailer buttons should explain that no trailer is available.");
+    }
+
+    @Test(groups = {"regression", "movie", "TS_301", "TC_101"}, dataProvider = "movieSearchData",
+            description = "Validate that movies can be searched and marked intrest")
+    public void TC_301_moviesCanBeSearchedandmarkedintrest(Map<String, String> data) throws InterruptedException {
+        loginAsUser();
+        String movieName = data.getOrDefault("movieName", ConfigReader.get("defaultMovie"));
+        MoviesPage moviesPage = new MoviesPage(driver).open();
+        if (!moviesPage.hasMovieCards()) {
+            throw new SkipException("No movie cards are available to search.");
+        }
+
+        moviesPage.search(movieName);
+        moviesPage.clickFirstMovieTitle();
+        moviesPage.intrestvisible();
+        Assert.assertTrue(moviesPage.intrestbuttonclick(),
+                "Interest button should only appear when no shows are available.");
+
     }
 }

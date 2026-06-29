@@ -4,9 +4,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.SkipException;
 import utils.ConfigReader;
 
+import java.time.Duration;
 import java.util.List;
 
 public class MoviesPage extends BasePage {
@@ -20,7 +22,9 @@ public class MoviesPage extends BasePage {
     private final By moviePosters = idStartsWith("movies-poster-");
     private final By bookButtons = idStartsWith("movie-book-");
     private final By trailerButtons = idStartsWith("movie-trailer-");
-
+    private final By showsList = idStartsWith("show-");
+    private final By intrestButton = id("booking-interest-btn");
+    private final By noShowsMessage = id("booking-shows-empty-msg");
     public MoviesPage(WebDriver driver) {
         super(driver);
     }
@@ -45,6 +49,11 @@ public class MoviesPage extends BasePage {
     }
 
     public boolean hasMovieCards() {
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(movieCards));
+        } catch (Exception e) {
+            return false;
+        }
         return !visibleElements(movieCards).isEmpty();
     }
 
@@ -112,6 +121,68 @@ public class MoviesPage extends BasePage {
             return false;
         }
         return posters.stream().allMatch(this::imageLoaded);
+    }
+
+    public boolean clickFirstMovieTitle() {
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(moviePosters));
+        } catch (Exception e) {
+            return false;
+        }
+        List<WebElement> posters = visibleElements(moviePosters);
+        if (posters.isEmpty()) return false;
+        WebElement img = posters.get(0).findElement(By.tagName("img"));
+        String urlBefore = driver.getCurrentUrl();
+        click(img);
+        wait.until(ExpectedConditions.not(ExpectedConditions.urlToBe(urlBefore)));
+
+        return true;
+    }
+    public boolean intrestbuttonclick(){
+        try {
+            wait.until(ExpectedConditions.or(
+                    ExpectedConditions.presenceOfElementLocated(showsList),
+                    ExpectedConditions.presenceOfElementLocated(noShowsMessage) // the <p> id
+            ));
+        }catch (Exception e){
+            return  false;
+        }
+        List<WebElement> shows = visibleElements(showsList);
+        if(shows.size()==0){
+            if(isVisible(intrestButton)){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            if(isVisible(intrestButton)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean intrestvisible(){
+        try {
+            wait.until(ExpectedConditions.or(
+                    ExpectedConditions.visibilityOfElementLocated(intrestButton),
+                    ExpectedConditions.presenceOfElementLocated(noShowsMessage),
+                    ExpectedConditions.presenceOfElementLocated(showsList)
+            ));
+        } catch (Exception e) {
+            System.out.println("[DEBUG] Wait timed out - nothing loaded: " + e.getMessage());
+            return false;
+        }
+        if (isVisible(noShowsMessage)) {
+            try {
+                wait.until(ExpectedConditions.presenceOfElementLocated(intrestButton));
+            } catch (Exception e) {
+                System.out.println("[DEBUG] Interest button never appeared after noShowsMessage");
+                return false;
+            }
+        }
+        boolean btnFound   = isVisible(intrestButton);
+        return btnFound;
     }
 
     public boolean bookFirstMovie() {
