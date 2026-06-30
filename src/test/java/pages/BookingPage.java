@@ -91,7 +91,7 @@ public class BookingPage extends BasePage {
     }
 
     public void proceedToPay() {
-        click(confirmButton);
+        driver.findElement(confirmButton).click();
     }
 
     public boolean waitForErrorOrStillOnBooking() {
