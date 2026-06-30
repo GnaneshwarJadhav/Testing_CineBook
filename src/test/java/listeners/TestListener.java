@@ -1,6 +1,6 @@
 package listeners;
 
-import base.DriverFactory;
+import base.BaseTest;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import org.apache.logging.log4j.LogManager;
@@ -8,9 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-import utils.ConfigReader;
 import utils.ExtentReportManager;
-import utils.ScreenshotUtils;
 
 public class TestListener implements ITestListener {
     private static final Logger LOGGER = LogManager.getLogger(TestListener.class);
@@ -33,9 +31,11 @@ public class TestListener implements ITestListener {
 
     @Override
     public void onTestFailure(ITestResult result) {
-        String screenshot = "";
-        if (ConfigReader.getBoolean("screenshotOnFailure", true)) {
-            screenshot = ScreenshotUtils.capture(DriverFactory.getDriver(), result.getMethod().getMethodName());
+        // Screenshot is captured in BaseTest.tearDown() before the driver is quit,
+        // so it is reliably available here for both regular and data-provider tests.
+        String screenshot = BaseTest.FAILURE_SCREENSHOT.get();
+        if (screenshot == null) {
+            screenshot = "";
         }
         TEST.get().fail(result.getThrowable());
         if (!screenshot.isBlank()) {

@@ -8,7 +8,7 @@ import pages.AnalyticsPage;
 
 public class AdminAnalyticsDashboardTests extends BaseTest {
 
-    @Test(groups = {"sanity", "regression", "admin", "admin-analytics", "FRD_12_1", "TS_503"},
+    @Test(groups = {"regression", "admin", "admin-analytics", "FRD_12_1", "TS_503"},
             description = "TC_503: Verify default Analytics dashboard metrics and sections")
     public void TC_503_analyticsDashboardShowsDefaultMetricsAndSections() {
         loginAsAdmin();
@@ -20,7 +20,7 @@ public class AdminAnalyticsDashboardTests extends BaseTest {
                 "Ticket Bookings, Show Occupancy, Top Performing Shows, Top Rated Movies, and Audience Interest sections should be visible.");
     }
 
-    @Test(groups = {"sanity", "regression", "admin", "admin-analytics", "FRD_12_1", "TS_503"},
+    @Test(groups = {"regression", "admin", "admin-analytics", "FRD_12_1", "TS_503"},
             description = "TC_504: Verify the functionality of the Refresh button")
     public void TC_504_analyticsRefreshRefetchesWithoutPageReload() {
         loginAsAdmin();
@@ -61,7 +61,7 @@ public class AdminAnalyticsDashboardTests extends BaseTest {
                 "Ticket Bookings section should remain visible after selecting By week.");
     }
 
-    @Test(groups = {"known-defect", "DF_001", "regression", "admin", "admin-analytics", "FRD_12_1", "TS_504"},
+    @Test(groups = {"known-defect", "DF_001", "admin", "admin-analytics", "FRD_12_1", "TS_504"},
             description = "TC_506: Verify empty states for specific analytics sections")
     public void TC_506_analyticsShowsEmptyStatesForRatingsAndInterest() {
         loginAsAdmin();

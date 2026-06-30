@@ -10,7 +10,7 @@ import pages.AnalyticsPage;
 
 public class AdminTests extends BaseTest {
 
-    @Test(groups = {"sanity", "regression", "admin", "FRD_2_9"},
+    @Test(groups = {"smoke", "admin", "FRD_2_9"},
             description = "FRD_2.9: Admin can open Manage Movies and see movie form/table")
     public void FRD_291_adminManageMoviesPageLoads() {
         loginAsAdmin();
@@ -29,7 +29,7 @@ public class AdminTests extends BaseTest {
         Assert.assertTrue(page.formStillDisplayed(), "Invalid movie form should remain displayed.");
     }
 
-    @Test(groups = {"sanity", "regression", "admin", "FRD_2_10"},
+    @Test(groups = {"regression", "admin", "FRD_2_10"},
             description = "FRD_2.10: Admin can open Manage Shows and see show form/table")
     public void FRD_2101_adminManageShowsPageLoads() {
         loginAsAdmin();
@@ -39,7 +39,7 @@ public class AdminTests extends BaseTest {
         Assert.assertTrue(page.hasTableOrEmptyState(), "Show table or empty state should be displayed.");
     }
 
-    @Test(groups = {"sanity", "regression", "admin", "FRD_2_11"},
+    @Test(groups = {"regression", "admin", "FRD_2_11"},
             description = "FRD_2.11.1-2.11.3: Admin can view and filter booking records")
     public void FRD_2111_adminBookingsPageLoadsAndTabsWork() {
         loginAsAdmin();
@@ -49,7 +49,7 @@ public class AdminTests extends BaseTest {
         Assert.assertTrue(page.hasTableOrEmptyRow(), "Admin bookings table or empty row should be displayed.");
     }
 
-    @Test(groups = {"sanity", "regression", "admin", "FRD_2_11"},
+    @Test(groups = {"regression", "admin", "FRD_2_11"},
             description = "FRD_2.11.4-2.11.6: Admin can open analytics dashboard with KPIs")
     public void FRD_2114_adminAnalyticsDashboardLoads() {
         loginAsAdmin();

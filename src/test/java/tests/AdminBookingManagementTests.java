@@ -20,7 +20,7 @@ public class AdminBookingManagementTests extends BaseTest {
         Assert.assertEquals(page.ledgerRowCount(), 0, "Ledger table should not display booking rows.");
     }
 
-    @Test(groups = {"sanity", "regression", "admin", "admin-booking-management", "FRD_11_1", "TS_502"},
+    @Test(groups = {"regression", "admin", "admin-booking-management", "FRD_11_1", "TS_502"},
             description = "TC_502: Verify booking data is strictly scoped to the admin's theater")
     public void TC_502_manageBookingsDataIsScopedToAdminTheater() {
         loginAsAdmin();
