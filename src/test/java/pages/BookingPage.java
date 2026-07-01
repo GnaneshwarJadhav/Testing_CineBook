@@ -14,24 +14,16 @@ import java.util.List;
 public class BookingPage extends BasePage {
     private final By page = id("booking-page");
     private final By confirmButton = id("booking-confirm");
-    private final By error = id("booking-error");
     private final By total = id("booking-total");
     private final By seatCount = id("booking-seat-count");
-    private final By paymentSuccessStatus = id("payment-success-status");
-    private final By stripePaymentFrame = By.cssSelector("iframe[name*='__privateStripeFrame'], iframe[title*='Secure payment'], iframe[src*='stripe.com'], iframe[name='link-login']");
-    private final By stripeSubmitButton = By.cssSelector("button[data-testid='hosted-payment-submit-button']");
-
-    private final By seatsLoaded = By.cssSelector("[id^='seat-']");
     private final By allSeats = By.cssSelector("button[id^='seat-']");
     private final By bookedSeats = By.cssSelector(
             "[id^='seat-'].booked, [id^='seat-'].seat-booked, [id^='seat-'][data-booked='true'], [id^='seat-'][aria-disabled='true']"
     );
-    private final By availableSeats = By.cssSelector(
-            "[id^='seat-']:not(.disabled):not([disabled]):not(.booked):not(.seat-booked), .seat-available:not([disabled])"
-    );
     private final By shows = By.cssSelector("[id^='show-']:not([disabled])");
-    private final By ticketPrice = By.xpath("//*[@class='text-base font-bold text-tomato-600']");
+    private final By ticketPrice = By.cssSelector(".text-base.font-bold.text-tomato-600");
     private final By totalPrice = By.id("booking-total");
+    private final By seatsLeft = By.cssSelector("p[class='text-[0.65rem] font-semibold uppercase tracking-wider text-gray-500']");
     public BookingPage(WebDriver driver) {
         super(driver);
     }
@@ -49,8 +41,11 @@ public class BookingPage extends BasePage {
     }
 
     public void openMoviesAndBook(String movieId) {
-        driver.get(ConfigReader.baseUrl() + "/movies");
         visible(id("movies-page"));
+        //WebElement element = driver.findElement(By.id(movieId));
+        JavascriptExecutor js = (JavascriptExecutor)driver;
+        js.executeScript("window.scrollBy(0, 700);");
+        visible(By.id(movieId));
         click(By.id(movieId));
         waitForBookingPage();
     }
@@ -60,6 +55,7 @@ public class BookingPage extends BasePage {
     }
 
     public boolean selectFirstShowIfPresent() {
+        visible(shows);
         List<WebElement> showButtons = visibleElements(shows).stream()
                 .filter(WebElement::isEnabled)
                 .toList();
@@ -71,7 +67,7 @@ public class BookingPage extends BasePage {
     }
 
     public boolean selectFirstAvailableSeat() {
-
+        visible(allSeats);
         List<WebElement> seats = driver.findElements(allSeats).stream()
                 .filter(WebElement::isEnabled)
                 .toList();
@@ -106,53 +102,8 @@ public class BookingPage extends BasePage {
         return true;
     }
 
-    public boolean waitForPaymentSuccessPage() {
-        wait.until(driver -> currentUrl().contains("/payment/success"));
-        visible(paymentSuccessStatus);
-        return true;
-    }
-
-    public String getPaymentSuccessStatusText() {
-        return text(paymentSuccessStatus);
-    }
-
-    public void completeStripePayment(String email, String cardNumber, String cardExpiry, String cardCvc, String billingName) {
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(stripePaymentFrame));
-
-        type(By.id("email"), email);
-        type(By.id("cardNumber"), cardNumber);
-        type(By.id("cardExpiry"), cardExpiry);
-        type(By.id("cardCvc"), cardCvc);
-        type(By.id("billingName"), billingName);
-
-        WebElement submit = wait.until(ExpectedConditions.elementToBeClickable(stripeSubmitButton));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", submit);
-
-        try {
-            submit.click();
-        } catch (org.openqa.selenium.ElementClickInterceptedException intercepted) {
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", submit);
-        }
-
-        driver.switchTo().defaultContent();
-    }
-
-    public String getSeatsLeft(String showId) {
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        String script = "const el = document.querySelector('#" + showId + " p[class*=\\\"text-[0.65rem]\\\"]');"
-                + "return el ? el.innerText.trim() : '';";
-        return (String) js.executeScript(script);
-    }
-
-    public void selectMovie(String id) {
-        click(By.cssSelector("[id='" + id + "']"));
-    }
-
-    public void selectShow(String id) {
-        click(By.cssSelector("[id='" + id + "']"));
-    }
-
     public int findEnabledSeats() {
+        visible(bookedSeats);
         List<WebElement> seats = driver.findElements(allSeats);
         int enabledCount = 0;
 
@@ -166,6 +117,7 @@ public class BookingPage extends BasePage {
     }
 
     public List<WebElement> getBookedSeats() {
+        visible(bookedSeats);
         return driver.findElements(bookedSeats);
     }
 
@@ -184,9 +136,6 @@ public class BookingPage extends BasePage {
         return true;
     }
 
-    public boolean isSeatUnselectable(WebElement seat) {
-        return isSeatMarkedDisabled(seat) || !seat.isEnabled();
-    }
 
     private boolean isSeatMarkedDisabled(WebElement seat) {
         String disabledAttr = seat.getAttribute("disabled");
@@ -202,10 +151,46 @@ public class BookingPage extends BasePage {
     }
 
     public String getTicketPrice(){
+        visible(ticketPrice);
         return driver.findElement(ticketPrice).getText();
     }
 
     public String getTotalPrice(){
+        visible(totalPrice);
         return driver.findElement(totalPrice).getText();
     }
+
+    public String getSeatsLeftText(){
+        visible(seatsLeft);
+        return driver.findElement(seatsLeft).getText();
+    }
+
+    public String getCurrentUrl(){
+        return driver.getCurrentUrl();
+    }
+
+    public void goToUrl(String url){
+        driver.get(url);
+    }
+
+    public boolean proceedClickable(){
+        return driver.findElement(confirmButton).isEnabled();
+    }
+
+    public WebElement getFirstBookedSeat() {
+        try {
+            visible(bookedSeats); // wait until at least one booked seat is visible
+            List<WebElement> seats = driver.findElements(bookedSeats);
+
+            return seats.isEmpty() ? null : seats.get(0);
+        } catch (Exception e) {
+            return null; // no booked seats found within wait period
+        }
+    }
+
+    public void selectBookedSeat(String id){
+        visible(By.id(id));
+        driver.findElement(By.id(id)).click();
+    }
+
 }

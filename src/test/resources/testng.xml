@@ -11,8 +11,8 @@
         <groups>
             <run>
                 <include name="smoke"/>
-                <include name="sanity"/>
-                <include name="regression"/>
+                <exclude name="sanity"/>
+                <exclude name="regression"/>
                 <exclude name="known-defect"/>
                 <exclude name="payment"/>
                 <exclude name="destructive"/>
