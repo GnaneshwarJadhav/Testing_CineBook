@@ -3,13 +3,14 @@ package base;
 import org.openqa.selenium.WebDriver;
 import org.testng.ITestResult;
 import org.testng.SkipException;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Optional;
-import org.testng.annotations.Parameters;
+import org.testng.annotations.*;
 import pages.LoginPage;
 import utils.ConfigReader;
+import utils.ExcelUtils;
 import utils.ScreenshotUtils;
+
+import java.util.List;
+import java.util.Map;
 
 public abstract class BaseTest {
     protected WebDriver driver;
@@ -47,12 +48,24 @@ public abstract class BaseTest {
         DriverFactory.quitDriver();
     }
 
+    private Map<String, String> getCredentials(String role) {
+        return ExcelUtils.readSheet("LoginData")
+                .stream()
+                .filter(row -> role.equalsIgnoreCase(row.get("role")))
+                .filter(row -> !row.get("username").startsWith("REPLACE_WITH"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Credentials not found for role: " + role));
+    }
+
     protected void loginAsUser() {
-        loginWith("user.username", "user.password", "moviegoer");
+        Map<String, String> user = getCredentials("USER");
+        loginWithCredentials(user.get("username"), user.get("password"));
     }
 
     protected void loginAsAdmin() {
-        loginWith("admin.username", "admin.password", "admin");
+        Map<String, String> admin = getCredentials("ADMIN");
+        loginWithCredentials(admin.get("username"), admin.get("password"));
     }
 
     protected void skipIfPaymentTestsDisabled() {
@@ -73,6 +86,12 @@ public abstract class BaseTest {
         if (ConfigReader.isPlaceholderCredential(username) || ConfigReader.isPlaceholderCredential(password)) {
             throw new SkipException("Set " + usernameKey + " and " + passwordKey + " in config.properties or with -D options to run " + roleLabel + " tests.");
         }
+        LoginPage loginPage = new LoginPage(driver).open();
+        loginPage.login(username, password);
+        loginPage.waitUntilLoggedIn();
+    }
+
+    private void loginWithCredentials(String username, String password) {
         LoginPage loginPage = new LoginPage(driver).open();
         loginPage.login(username, password);
         loginPage.waitUntilLoggedIn();

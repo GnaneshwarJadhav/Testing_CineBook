@@ -6,17 +6,17 @@
     </listeners>
 
     <parameter name="browser" value="chrome"/>
-    <parameter name="headless" value="false"/>
+    <parameter name="headless" value="true"/>
 
     <test name="CineBook Smoke Sanity And Regression">
         <groups>
             <run>
                 <include name="admin-booking-management"/>
-<!--                <exclude name="sanity"/>-->
-<!--                <exclude name="regression"/>-->
-<!--                <exclude name="known-defect"/>-->
-<!--                <exclude name="payment"/>-->
-<!--                <exclude name="destructive"/>-->
+                <include name="sanity"/>
+                <include name="regression"/>
+                <include name="known-defect"/>
+                <include name="payment"/>
+                <include name="destructive"/>
             </run>
         </groups>
         <packages>
